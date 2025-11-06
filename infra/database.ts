@@ -1,9 +1,16 @@
-import { Client, type QueryConfig } from "pg";
+import { Client, Pool } from "pg";
 
-export const query = async (queryObject: QueryConfig) => {
+export const query = async (queryObject: any) => {
   if (!process.env.POSTGRES_PASSWORD) {
     console.warn("[database.ts] POSTGRES_PASSWORD is not defined");
   }
+
+  const pool = new Pool();
+
+  pool.on("error", (err) => {
+    console.error("Unexpected error on idle client", err);
+    process.exit(-1);
+  });
 
   const client = new Client({
     host: process.env.POSTGRES_HOST,
@@ -14,7 +21,13 @@ export const query = async (queryObject: QueryConfig) => {
   });
 
   await client.connect();
-  const result = await client.query(queryObject);
-  await client.end();
-  return result;
+
+  try {
+    const result = await client.query(queryObject);
+    return result;
+  } catch (error) {
+    console.error(error);
+  } finally {
+    await client.end();
+  }
 };
