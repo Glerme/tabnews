@@ -20,8 +20,6 @@ export async function GET(request: NextRequest) {
   const databaseOpenedConnectionsValue =
     databaseOpenedConnectionsQuery.rows[0].count;
 
-  console.log("databaseOpenedConnectionsValue", databaseOpenedConnectionsValue);
-
   return Response.json({
     updated_at: updatedAt,
     dependencies: {
